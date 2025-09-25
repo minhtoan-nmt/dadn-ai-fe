@@ -37,7 +37,7 @@ function IndicatorSection() {
         <h1 className="text-2xl font-bold mb-2">Indicators</h1>
         <div className="flex flex-row gap-5">
             {indicatorList.map(indicator => {
-                return <Indicator header={indicator.heading}
+                return <Indicator key={indicator.heading} header={indicator.heading}
                     icon={indicator.icon}
                     number={indicator.number}
                     measurement={indicator.measurement}
@@ -57,7 +57,7 @@ function FanModeSelector() {
   return (
     <div className="flex justify-center items-center mt-3">
       {options.map((option, index) => (
-        <div className="flex flex-row items-center">
+        <div key={option} className="flex flex-row items-center">
             <div
             key={option}
             className="flex flex-col items-center cursor-pointer"
@@ -137,7 +137,7 @@ function DeviceInfoSection() {
         <h1>Devices</h1>
         <div className="flex flex-row gap-10">
             {deviceList.map(item => {
-                return <DeviceInfo deviceName={item.deviceName}
+                return <DeviceInfo key={item.deviceName} deviceName={item.deviceName}
                 deviceIcon={item.deviceIcon}
                 deviceStatus={item.deviceStatus}
                 toggleName1={item.toggleName1}
