@@ -134,7 +134,7 @@ function DeviceInfoSection() {
     ];
 
     return (<div>
-        <h1>Devices</h1>
+        <h1 className="font-bold text-2xl">Devices</h1>
         <div className="flex flex-row gap-10">
             {deviceList.map(item => {
                 return <DeviceInfo key={item.deviceName} deviceName={item.deviceName}
