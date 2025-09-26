@@ -43,6 +43,7 @@ export default function Login() {
 
     if (Object.keys(newErrors).length === 0) {
       console.log("🚀 Attempting login with:", { username, password });
+      
       navigate("/"); // login thành công → sang trang home
     }
   };

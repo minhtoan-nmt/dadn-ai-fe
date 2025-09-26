@@ -1,15 +1,24 @@
 import { useState } from "react";
 
-type buttonProps = {power: any, setPower: any};
+type buttonProps = {isOn: boolean, name: string, buttonType: string};
 
-export default function ToggleButton({power, setPower}: buttonProps) {
-  const [enabled, setEnabled] = useState(false);
+export default function ToggleButton({isOn, name, buttonType}: buttonProps) {
+  const [enabled, setEnabled] = useState(isOn);
+
+  
 
   return (
     <button
-      onClick={() => {
+      onClick={async () => {
         setEnabled(!enabled);
-        power === "On" ? setPower("Off") : setPower("On");
+        try {
+          const data = await fetch(`http://localhost:3000/api/device/${buttonType}/${name}`, {
+            method: 'POST',
+          });
+          console.log(data);
+        } catch (error) {
+          console.error('Error: ', error);
+        }
     }}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
         enabled ? "bg-blue-600" : "bg-gray-300"
