@@ -6,6 +6,7 @@ import { PiFan } from "react-icons/pi";
 import { BiSolidToggleRight } from "react-icons/bi";
 import { useState } from "react";
 import { HiOutlineLightBulb } from "react-icons/hi";
+import ToggleButton from "./ToggleButton";
 
 type ContentProp = {className: string};
 type IndicatorProp = {header: string, icon: any, number: number | undefined, measurement: string | undefined, state: string, stateColor: string};
@@ -50,7 +51,7 @@ function IndicatorSection() {
 }
 
 function FanModeSelector() {
-    const [selected, setSelected] = useState("Breeze");
+    const [selected, setSelected] = useState("Level 0");
 
   const options = ["Level 0", " Level 1", "Level 2", "Level 3"];
 
@@ -88,6 +89,8 @@ function FanModeSelector() {
 type deviceInfoProps = {deviceName: string, deviceStatus: string, toggleName1: string, toggleName2: string, deviceIcon: any};
 
 function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceIcon}: deviceInfoProps) {
+    const [powerMode, setPowerMode] = useState("Off");
+    const [auto, setAuto] = useState("Manual");
     return (
         <div className="w-sm h-fit bg-white rounded-2x p-3">
             <h1 className="text-center font-semibold text-2xl">{deviceName}</h1>
@@ -98,12 +101,13 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
                 </div>
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-row items-center justify-end gap-5">
-                        <p className="font-semibold text-xl">{toggleName1}</p>
-                        <BiSolidToggleRight className="size-15 fill-indigo-600"/>
+                        <p className="font-semibold text-xl">{powerMode}</p>
+                        {/* <BiSolidToggleRight className="size-15 fill-indigo-600"/> */}
+                        <ToggleButton power={powerMode} setPower={setPowerMode}/>
                     </div>
                     <div className="flex flex-row items-center justify-end gap-5">
                         <p className="font-semibold text-xl">{toggleName2}</p>
-                        <BiSolidToggleRight className="size-15 fill-indigo-600"/>
+                        <ToggleButton power={auto} setPower={setAuto}/>
                     </div>
                 </div>
             </div>
