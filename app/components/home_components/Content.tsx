@@ -63,11 +63,9 @@ function IndicatorSection() {
 
     useEffect(() => {
         const source = new EventSource("http://localhost:3000/api/stream");
-        console.log(source);
 
         // source.addEventListener('message', (e) => {
         //     const data = JSON.parse(e.data);
-        //     console.log(data);
         // })
 
         // source.onopen = () => {
@@ -79,7 +77,6 @@ function IndicatorSection() {
         source.addEventListener("sensor", (e) => {
             try {
               const data = JSON.parse(e.data);
-              console.log("Parsed data");
               if (data.nhietDo !== undefined)
                 setTemperature(data.nhietDo);
 
@@ -132,23 +129,6 @@ function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
             className="flex flex-col items-center cursor-pointer"
             onClick={async () => {
                 setLevel(index);
-
-                // try {
-                //     const res = await fetch(`http://localhost:3000/api/device/setLevel/${deviceType}`, {
-                //         method: 'POST',
-                //         headers: {
-                //             'Content-Type': 'application/json',
-                //         },
-                //         body: JSON.stringify({
-                //             'level': level
-                //         })
-                //     });
-                //     if (!res.ok) {
-                //         console.error(res.status);
-                //     }
-                // } catch (error) {
-                //     console.error(error);
-                // }
 
                 try {
                     const res = await fetch(`http://localhost:3000/api/device/setLevel/${deviceType}`, {
@@ -203,8 +183,8 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
     const [auto, setAuto] = useState("Manual");
     const [level, setLevel] = useState(0);
 
-    let isPowerOn = powerMode === "On";
-    let isAuto = auto === "Auto";
+    const [isPowerOn, setIsPowerOn] = useState(powerMode === "On");
+    const [isAuto, setIsAuto] = useState(false);
 
     let name;
     if (deviceName === "Fan") {
@@ -222,16 +202,19 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
                 if (!res.ok)
                     throw new Error(`${res.status}`);
                 const data = await res.json();
-                console.log(data);
                 if (data.isActive) {
                     setPowerMode("On");
+                    setIsPowerOn(true);
                 } else {
                     setPowerMode("Off");
+                    setIsPowerOn(false);
                 }
                 if (data.auto) {
                     setAuto("Auto");
+                    setIsAuto(true);
                 } else {
                     setAuto("Manual");
+                    setIsAuto(false);
                 }
 
                 if (data.name == 'light') {
@@ -244,7 +227,7 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
             }
         }
         deviceInfo();
-    }, [])
+    }, [])    
 
     return (
         <div className="w-sm h-fit bg-white rounded-2x p-3">
@@ -258,16 +241,46 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
                     <div className="flex flex-row items-center justify-end gap-5">
                         <p className="font-semibold text-xl">{powerMode}</p>
                         {/* <BiSolidToggleRight className="size-15 fill-indigo-600"/> */}
-                        <button onClick={() => {
-                            powerMode === "On" ? setPowerMode("Off") : setPowerMode("On");
+                        <button onClick={async () => {
+                            // powerMode === "On" ? setPowerMode("Off") : setPowerMode("On");
+                            if (powerMode === "On") {
+                                setPowerMode("Off");
+                                setIsPowerOn(false);
+                            } else {
+                                setPowerMode("On");
+                                setIsPowerOn(true);
+                            }
+                            try {
+                              const data = await fetch(`http://localhost:3000/api/device/statusToggle/${name}`, {
+                                method: 'POST',
+                              });
+                              console.log(data);
+                            } catch (error) {
+                              console.error('Error: ', error);
+                            }
                         }}>
                             <ToggleButton isOn={isPowerOn}  name={name} buttonType="statusToggle"/>
                         </button>
                     </div>
                     <div className="flex flex-row items-center justify-end gap-5">
                         <p className="font-semibold text-xl">{toggleName2}</p>
-                        <button onClick={() => {
-                            auto === "Auto" ? setAuto("Manual") : setAuto("Auto");
+                        <button onClick={async () => {
+                            // auto === "Auto" ? setAuto("Manual") : setAuto("Auto");
+                            if (auto === "Auto") {
+                                setAuto("Manual");
+                                setIsAuto(false);
+                            } else {
+                                setAuto("Auto");
+                                setIsAuto(true);
+                            }
+                            try {
+                              const data = await fetch(`http://localhost:3000/api/device/autoToggle/${name}`, {
+                                method: 'POST',
+                              });
+                              console.log(data);
+                            } catch (error) {
+                              console.error('Error: ', error);
+                            }
                         }}>
                             <ToggleButton isOn={isAuto} name={name} buttonType="autoToggle"/>
                         </button>
