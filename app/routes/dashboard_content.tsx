@@ -1,4 +1,3 @@
-// app/components/home_components/Content.tsx
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,7 +7,7 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 
@@ -84,6 +83,7 @@ export default function Content({ className = "" }) {
 
   const commonOptions = {
     responsive: true,
+    maintainAspectRatio: false, // Allows charts to shrink more easily
     plugins: {
       legend: { position: "top" as const },
     },
@@ -94,21 +94,28 @@ export default function Content({ className = "" }) {
   };
 
   return (
-    <div className={`flex flex-col flex-6 p-10 bg-gray-100 gap-8 ${className}`}>
-      <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+    <div className={`flex flex-col flex-1 p-6 md:p-10 bg-gray-100 gap-8 ${className}`}>
+      <h1 className="text-3xl font-bold">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-6">
         {/* Study Duration */}
         <div className={chartContainerStyle}>
           <div className="flex justify-between items-center">
             <h2 className="font-bold text-lg text-blue-900">Study Duration</h2>
-            <p className="text-sm text-gray-500">This Week ▼</p>
+            {/* Replaced p tag with a styled select dropdown */}
+            <select className="text-sm text-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none cursor-pointer">
+              <option>This Week</option>
+              <option>Last Week</option>
+              <option>This Month</option>
+            </select>
           </div>
-          <Bar data={studyData} options={commonOptions} />
-          <div className="text-sm text-gray-600 mt-2">
-            <p>Highest Study Duration Date: <b>Sunday</b></p>
-            <p>Shortest Study Duration Date: <b>Wednesday</b></p>
-            <p>Average Study Duration: <b>3 hours</b></p>
+          <div className="h-48">
+            <Bar data={studyData} options={commonOptions} />
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mt-2">
+            <span>Highest Study Duration Date: <b>Sunday</b></span>
+            <span>Shortest Study Duration Date: <b>Wednesday</b></span>
+            <span>Average Study Duration: <b>3 hours</b></span>
           </div>
         </div>
 
@@ -116,13 +123,20 @@ export default function Content({ className = "" }) {
         <div className={chartContainerStyle}>
           <div className="flex justify-between items-center">
             <h2 className="font-bold text-lg text-green-900">Temperature</h2>
-            <p className="text-sm text-gray-500">5 minutes ▼</p>
+             {/* Replaced p tag with a styled select dropdown */}
+            <select className="text-sm text-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none cursor-pointer">
+              <option>5 minutes</option>
+              <option>15 minutes</option>
+              <option>30 minutes</option>
+            </select>
           </div>
-          <Line data={tempData} options={commonOptions} />
-          <div className="text-sm text-gray-600 mt-2">
-            <p>Highest Temperature: <b>45°C</b></p>
-            <p>Average Temperature: <b>35°C</b></p>
-            <p>Lowest Temperature: <b>15°C</b></p>
+           <div className="h-48">
+            <Line data={tempData} options={commonOptions} />
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mt-2">
+            <span>Highest Temperature: <b>45°C</b></span>
+            <span>Average Temperature: <b>35°C</b></span>
+            <span>Lowest Temperature: <b>15°C</b></span>
           </div>
         </div>
 
@@ -130,13 +144,20 @@ export default function Content({ className = "" }) {
         <div className={chartContainerStyle}>
           <div className="flex justify-between items-center">
             <h2 className="font-bold text-lg text-purple-900">Humidity</h2>
-            <p className="text-sm text-gray-500">Today ▼</p>
+             {/* Replaced p tag with a styled select dropdown */}
+            <select className="text-sm text-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none cursor-pointer">
+              <option>Today</option>
+              <option>Yesterday</option>
+              <option>This Week</option>
+            </select>
           </div>
-          <Line data={humidityData} options={commonOptions} />
-          <div className="text-sm text-gray-600 mt-2">
-            <p>Highest Humidity: <b>82%</b></p>
-            <p>Lowest Humidity: <b>25%</b></p>
-            <p>Average Humidity: <b>63%</b></p>
+           <div className="h-48">
+            <Line data={humidityData} options={commonOptions} />
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mt-2">
+            <span>Highest Humidity: <b>82%</b></span>
+            <span>Lowest Humidity: <b>25%</b></span>
+            <span>Average Humidity: <b>63%</b></span>
           </div>
         </div>
 
@@ -144,16 +165,24 @@ export default function Content({ className = "" }) {
         <div className={chartContainerStyle}>
           <div className="flex justify-between items-center">
             <h2 className="font-bold text-lg text-red-900">Light Level</h2>
-            <p className="text-sm text-gray-500">30 minutes ▼</p>
+            {/* Replaced p tag with a styled select dropdown */}
+            <select className="text-sm text-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none cursor-pointer">
+              <option>30 minutes</option>
+              <option>1 hour</option>
+              <option>Today</option>
+            </select>
           </div>
-          <Line data={lightData} options={commonOptions} />
-          <div className="text-sm text-gray-600 mt-2">
-            <p>Highest Light Level: <b>125 lux</b></p>
-            <p>Average Light Level: <b>83 lux</b></p>
-            <p>Lowest Light Level: <b>50 lux</b></p>
+           <div className="h-48">
+            <Line data={lightData} options={commonOptions} />
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mt-2">
+            <span>Highest Light Level: <b>125 lux</b></span>
+            <span>Average Light Level: <b>83 lux</b></span>
+            <span>Lowest Light Level: <b>50 lux</b></span>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
