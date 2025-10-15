@@ -1,6 +1,6 @@
-import Navbar from "../Navbar";
-import Content from "./Content";
-import Menu from "./Menu";
+import Navbar from "../components/Navbar";
+import Content from "./dashboard_content";
+import Menu from "../components/home_components/Menu";
 
 export default function HomeComponent() {
     return (<>
