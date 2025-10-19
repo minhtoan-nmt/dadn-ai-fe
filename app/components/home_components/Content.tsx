@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import ToggleButton from "./ToggleButton";
 
-type ContentProp = {className: string};
+export type ContentProp = {className: string};
 type IndicatorProp = {header: string, icon: any, number: number | undefined, measurement: string | undefined, state: string, stateColor: string};
 
 function Indicator({header, icon, number=undefined, measurement=undefined, state, stateColor}: IndicatorProp) {
