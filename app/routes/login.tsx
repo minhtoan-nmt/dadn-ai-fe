@@ -5,15 +5,15 @@ import { Eye, EyeOff } from "lucide-react";
 import Illustration from "../assets/illustration.png";
 import Logo from "../assets/logo.png"; // logo SmartClassroom
 
-// Fake socket
-function useFakeSocket() {
-  useEffect(() => {
-    console.log("🔌 Fake socket connected...");
-    return () => {
-      console.log("❌ Fake socket disconnected...");
-    };
-  }, []);
-}
+// // Fake socket
+// function useFakeSocket() {
+//   useEffect(() => {
+//     console.log("🔌 Fake socket connected...");
+//     return () => {
+//       console.log("❌ Fake socket disconnected...");
+//     };
+//   }, []);
+// }
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -27,24 +27,56 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
 
-  useFakeSocket();
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: typeof errors = {};
+
     if (!username.trim()) newErrors.username = "Username is required";
     if (!password.trim()) newErrors.password = "Password is required";
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("🚀 Attempting login with:", { username, password });
-      
-      navigate("/"); // login thành công → sang trang home
+      try {
+        const res = await fetch("http://localhost:3000/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Handle backend error messages
+          if (data.error || data.message) {
+            const msg = data.error || data.message;
+
+            // Handle common login errors
+            if (msg.toLowerCase().includes("password")) {
+              setErrors((prev) => ({ ...prev, password: msg }));
+            } else if (msg.toLowerCase().includes("username")) {
+              setErrors((prev) => ({ ...prev, username: msg }));
+            } else {
+              alert(msg);
+            }
+          } else {
+            alert("Login failed. Please try again.");
+          }
+          return;
+        }
+
+        // ✅ Successful login
+        alert("Login successful!");
+        navigate("/home", { replace: true });
+
+      } catch (err) {
+        console.error(err);
+        alert("Cannot connect to server. Please try again later.");
+      }
     }
   };
 

@@ -40,13 +40,13 @@ export default function Register() {
   }>({});
 
   const validatePassword = (pwd: string) => {
-    if (pwd.length < 6) return "Password must be at least 6 characters";
-    if (!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd))
-      return "Password must contain letters and numbers";
+    const pattern = /^[a-zA-Z0-9]{3,30}$/;
+    if (!pattern.test(pwd))
+      return "Password must be 3–30 characters and contain only letters and numbers.";
     return "";
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: typeof errors = {};
 
@@ -64,19 +64,46 @@ export default function Register() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      const users = getMockUsers();
-      // Check trùng username
-      if (users.find((u: any) => u.username === username)) {
-        alert("Username already exists!");
-        return;
-      }
+      // const users = getMockUsers();
+      // // Check trùng username
+      // if (users.find((u: any) => u.username === username)) {
+      //   alert("Username already exists!");
+      //   return;
+      // }
 
       // const newUser = { username, password };
       // const updatedUsers = [...users, newUser];
       // saveMockUsers(updatedUsers);
 
-      alert("Register successful!");
-      navigate("/login");
+      // alert("Register successful!");
+      // navigate("/login");
+
+      try {
+        const res = await fetch("http://localhost:3000/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        });
+          const data = await res.json();
+
+        if (!res.ok) {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            alert("Registration failed. Please try again.");
+          }
+          return;
+        }
+
+          alert("Register successful!");
+          navigate("/login");
+      } catch (err) {
+        console.error(err);
+        alert("Cannot connect to server. Please try again later.")
+      }
+
     }
   };
 
