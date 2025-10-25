@@ -5,16 +5,6 @@ import { Eye, EyeOff } from "lucide-react";
 import Illustration from "../assets/illustration.png";
 import Logo from "../assets/logo.png"; // logo SmartClassroom
 
-// // Fake socket
-// function useFakeSocket() {
-//   useEffect(() => {
-//     console.log("🔌 Fake socket connected...");
-//     return () => {
-//       console.log("❌ Fake socket disconnected...");
-//     };
-//   }, []);
-// }
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "SmartClassroom - Login" },
@@ -46,10 +36,11 @@ export default function Login() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ username, password }),
+          credentials: 'include',
         });
 
         const data = await res.json();
-
+        console.log(data)
         if (!res.ok) {
           // Handle backend error messages
           if (data.error || data.message) {
@@ -68,9 +59,12 @@ export default function Login() {
           }
           return;
         }
-
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
         // ✅ Successful login
         alert("Login successful!");
+        localStorage.setItem("user_id", data._id);
         navigate("/home", { replace: true });
 
       } catch (err) {

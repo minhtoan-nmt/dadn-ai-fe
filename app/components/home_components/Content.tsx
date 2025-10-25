@@ -114,7 +114,7 @@ function IndicatorSection() {
 type selectorProp = {level: number, setLevel: any, deviceType: string};
 
 function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
-    const options = ["Level 0", " Level 1", "Level 2", "Level 3"];
+    const options = [" Level 1", "Level 2", "Level 3"];
     // const [selected, setSelected] = useState(options[level]);
     let selected = options[level];
     console.log("Level " + level);
@@ -133,6 +133,7 @@ function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
                 try {
                     const res = await fetch(`http://localhost:3000/api/device/setLevel/${deviceType}`, {
                         method: 'POST',
+                        credentials: "include",
                         headers: {
                         'Content-Type': 'application/json',
                         },
@@ -198,7 +199,7 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
     useEffect(() => {
         const deviceInfo = async () => {
             try {
-                const res = await fetch(`http://localhost:3000/api/device/getInfoDevice/${name}`);
+                const res = await fetch(`/api/device/getInfoDevice/${name}`);
                 if (!res.ok)
                     throw new Error(`${res.status}`);
                 const data = await res.json();
@@ -253,6 +254,7 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
                             try {
                               const data = await fetch(`http://localhost:3000/api/device/statusToggle/${name}`, {
                                 method: 'POST',
+                                credentials: "include"
                               });
                               console.log(data);
                             } catch (error) {

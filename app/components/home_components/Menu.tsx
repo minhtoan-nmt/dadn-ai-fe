@@ -25,7 +25,7 @@ export default function Menu({ className = "" }: MenuProps) {
     try {
       const res = await fetch("http://localhost:3000/api/logout", {
         method: "GET", 
-        // credentials: "include",
+        credentials: "include",
         // headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -33,7 +33,7 @@ export default function Menu({ className = "" }: MenuProps) {
         throw new Error("Logout failed");
       }
       localStorage.removeItem("token");
-
+      localStorage.clear();
       alert(data.message);
 
       // ✅ Replace navigation so Back won’t go back to dashboard
