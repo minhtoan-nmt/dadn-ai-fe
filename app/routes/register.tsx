@@ -98,7 +98,7 @@ export default function Register() {
         }
 
           alert("Register successful!");
-          navigate("/login");
+          navigate("/");
       } catch (err) {
         console.error(err);
         alert("Cannot connect to server. Please try again later.")
@@ -213,7 +213,7 @@ export default function Register() {
             Already have an account?{" "}
             <button
               type="button"
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/")}
               className="text-indigo-500 font-medium hover:underline"
             >
               Login
