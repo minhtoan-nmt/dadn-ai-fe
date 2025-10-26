@@ -109,6 +109,7 @@ export default function Login() {
         localStorage.clear();
         localStorage.setItem("user_id", data._id);
         localStorage.setItem("loginTimestamp", new Date().getTime().toString());
+        localStorage.setItem("username", username);
         navigate("/home", { replace: true });
 
       } catch (err) {
