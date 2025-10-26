@@ -199,7 +199,10 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
     useEffect(() => {
         const deviceInfo = async () => {
             try {
-                const res = await fetch(`/api/device/getInfoDevice/${name}`);
+                const res = await fetch(`http://localhost:3000/api/device/getInfoDevice/${name}`, {
+                    method: 'GET',
+                    credentials: "include"
+                });
                 if (!res.ok)
                     throw new Error(`${res.status}`);
                 const data = await res.json();
