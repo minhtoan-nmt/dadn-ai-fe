@@ -95,9 +95,9 @@ function IndicatorSection() {
             }
           });
 
-        // return () => {
-        //     source.close(); // cleanup on unmount
-        // };
+        return () => {
+            source.close(); // cleanup on unmount
+        };
     }, [])
 
     return (<div>
@@ -411,7 +411,7 @@ const handleStatusUpdate = (eventData: string) => {
                 try {
                     const errorData = await res.json();
                     errorMsg = errorData.message || errorData.error || errorMsg;
-                                        alert(`Reset failed: ${errorMsg}`);
+                                        // alert(`Reset failed: ${errorMsg}`);
                 } catch (parseError) {
                     // Không parse được lỗi, dùng message mặc định
                 }
