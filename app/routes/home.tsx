@@ -9,7 +9,7 @@ export function meta({}: Route.MetaArgs) {
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
-const EXPIRATION_TIME_MS = 4 * 6 * 60 * 1000; 
+const EXPIRATION_TIME_MS = 4 * 60 * 60 * 1000; 
 
 export default function Home() {
     const navigate = useNavigate();
@@ -35,7 +35,7 @@ export default function Home() {
 
             if (sessionAge > EXPIRATION_TIME_MS) {       
                 // 1. Thông báo cho user
-                alert("Phiên của bạn đã hết hạn (Test 10s). Vui lòng đăng nhập lại.");
+                alert("Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại.");
 
                 // 2. Xóa localStorage
                 localStorage.clear();

@@ -16,10 +16,11 @@ function formatDateTime(isoString: string): string {
         minute: '2-digit',  // "43"
         second: '2-digit',  // "35"
         hour12: true,       // Sử dụng định dạng 12 giờ (AM/PM)
+        timeZone: 'Asia/Ho_Chi_Minh'
     };
 
     // 'vi-VN' để đảm bảo thứ tự Ngày/Tháng/Năm
-    return date.toLocaleString();
+    return date.toLocaleString("en-US", { timeZone: "UTC" });
 }
 
 export default function HistoryTable({ data }: HistoryProp) {

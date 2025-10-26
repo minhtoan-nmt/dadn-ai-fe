@@ -48,6 +48,17 @@ export default function HistoryContent({ className = "" }: ContentProp) {
                 if (!data.actions || typeof data.totalPages !== 'number') {
                     throw new Error("Invalid data format from API response.");
                 }
+                // --- THÊM BƯỚC SẮP XẾP Ở ĐÂY ---
+                // Sắp xếp mảng 'actions' theo 'time' giảm dần (mới nhất lên đầu)
+                const sortedActions = data.actions.sort((a, b) => {
+                    // Chuyển đổi chuỗi thời gian ISO thành đối tượng Date để so sánh
+                    const dateA = new Date(a.time);
+                    const dateB = new Date(b.time);
+                    // So sánh: dateB - dateA để sắp xếp giảm dần
+                    return dateB.getTime() - dateA.getTime();
+                });
+                console.log("Sorted Actions:", sortedActions); // Log data đã sắp xếp
+                // --------------------------------
                 console.log(`Fetched page ${currentPage}, number of rows: ${data.actions.length}`);
                 // 4. Cập nhật state với dữ liệu từ API
                 setActions(data.actions);
