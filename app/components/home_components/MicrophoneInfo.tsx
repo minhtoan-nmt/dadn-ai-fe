@@ -20,7 +20,7 @@ export default function MicrophoneInfo() {
         }
         getMicInfo();
     }, [])
-    return (<div className="w-sm h-fit bg-white rounded-2x p-5">
+    return (<div className="w-xs h-fit bg-white rounded-xl p-3 ">
         <h1 className="text-center font-semibold text-2xl">Microphone</h1>
         <div className="flex justify-center">
             <GrMicrophone size={175} className={"p-5 cursor-pointer hover:bg-gray-200 rounded-full m-5 " + (powerMode && "text-blue-400")}

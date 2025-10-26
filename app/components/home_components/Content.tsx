@@ -473,7 +473,7 @@ const handleStatusUpdate = (eventData: string) => {
     };
 
     return (
-        <div className="w-sm h-fit bg-white rounded-2x p-3 ">
+        <div className="w-xs h-fit bg-white rounded-xl p-3 ">
             <h1 className="text-center font-semibold text-2xl">{deviceName}</h1>
             <div className="grid grid-cols-2">
                 <div className="flex flex-col items-center">
