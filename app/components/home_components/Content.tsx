@@ -7,6 +7,7 @@ import { BiSolidToggleRight } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import ToggleButton from "./ToggleButton";
+import MicrophoneInfo from "./MicrophoneInfo";
 
 export type ContentProp = {className: string};
 type IndicatorProp = {header: string, icon: any, number: number | undefined, measurement: string | undefined, state: string, stateColor: string};
@@ -62,7 +63,9 @@ function IndicatorSection() {
 
 
     useEffect(() => {
-        const source = new EventSource("http://localhost:3000/api/stream");
+        const source = new EventSource("http://localhost:3000/api/stream/sensor", {
+            withCredentials: true,
+        });
 
         // source.addEventListener('message', (e) => {
         //     const data = JSON.parse(e.data);
@@ -326,7 +329,7 @@ function DeviceInfoSection() {
 
     return (<div>
         <h1 className="font-bold text-2xl">Devices</h1>
-        <div className="flex flex-row gap-10">
+        <div className="flex flex-row gap-10 wrap">
             {deviceList.map(item => {
                 return <DeviceInfo key={item.deviceName} deviceName={item.deviceName}
                 deviceIcon={item.deviceIcon}
@@ -336,6 +339,7 @@ function DeviceInfoSection() {
                 />   
             }      
             )}
+            <MicrophoneInfo />
         </div>
     </div>)
 }
