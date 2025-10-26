@@ -82,14 +82,14 @@ function IndicatorSection() {
         source.addEventListener("sensor", (e) => {
             try {
               const data = JSON.parse(e.data);
-              if (data.nhietDo !== undefined)
-                setTemperature(data.nhietDo);
+              if (data.TEMP !== undefined)
+                setTemperature(data.TEMP);
 
-              if (data.doAm !== undefined)
-                setHumidity(data.doAm);
+              if (data.HUMI !== undefined)
+                setHumidity(data.HUMI);
 
-              if (data.anhSang !== undefined)
-                setLightIntensity(data.anhSang);
+              if (data.LIGHT !== undefined)
+                setLightIntensity(data.LIGHT);
             } catch {
               console.warn("Không parse được JSON:", e.data);
             }
@@ -328,26 +328,39 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
             };
 
             // Hàm xử lý data nhận được
-            const handleStatusUpdate = (eventData: string) => {
+const handleStatusUpdate = (eventData: string) => {
                  try {
                      const data = JSON.parse(eventData);
-                     console.log(`[${name}] Received status update:`, data);
+                     console.log(`[${name}] Received status update object:`, data);
 
-                     // Chỉ cập nhật nếu data là của device này VÀ có thông tin isActive
-                     if (data.name === name && typeof data.isActive === 'boolean') {
-                         console.log(`[${name}] Updating power status via stream to: ${data.isActive ? 'On' : 'Off'}`);
-                         // Cập nhật state chỉ khi giá trị mới khác giá trị hiện tại
-                         // để tránh re-render không cần thiết
-                         setIsPowerOn(currentIsPowerOn => {
-                             if (currentIsPowerOn !== data.isActive) {
-                                 setPowerMode(data.isActive ? "On" : "Off");
-                                 return data.isActive;
-                             }
-                             return currentIsPowerOn;
-                         });
+                     let newIsActive: boolean | undefined = undefined;
+
+                     if (name === 'fan' && typeof data.fan === 'boolean') {
+                         newIsActive = data.fan;
+                         console.log(`[${name}] Extracted fan status: ${newIsActive}`);
+                     } else if (name === 'light' && typeof data.light === 'boolean') {
+                         newIsActive = data.light;
+                         console.log(`[${name}] Extracted light status: ${newIsActive}`);
                      } else {
-                        console.log(`[${name}] Ignoring status update (name mismatch or missing isActive):`, data);
+                         console.log(`[${name}] Ignoring update: Data object does not contain key '${name}' or value is not boolean.`);
+                         // Không cần return ở đây nữa, newIsActive sẽ là undefined
                      }
+
+                     // Chỉ gọi cập nhật state nếu newIsActive có giá trị boolean
+                     if (typeof newIsActive === 'boolean') {
+                         setIsPowerOn(currentIsPowerOn => {
+                             if (currentIsPowerOn !== newIsActive) {
+                                 console.log(`[${name}] ---> UPDATING UI STATE <--- from ${currentIsPowerOn} to ${newIsActive}`);
+                                 setPowerMode(newIsActive ? "On" : "Off");
+                                 return newIsActive; // ✅ Trả về boolean
+                             } else {
+                                 console.log(`[${name}] No UI update needed (received state matches current state).`);
+                                 return currentIsPowerOn; // ✅ Trả về boolean (giá trị cũ)
+                             }
+                         });
+                     }
+                     // Nếu newIsActive là undefined, không làm gì cả
+
                  } catch (err) {
                      console.warn(`[${name}] Failed to parse status JSON:`, eventData, err);
                  }
