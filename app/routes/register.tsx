@@ -1,23 +1,9 @@
 import type { Route } from "./+types/register";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import Illustration from "../assets/illustration.png";
 import Logo from "../assets/logo.png";
-
-// Giả lập đọc & ghi user (vì frontend không ghi trực tiếp vào file public)
-function getMockUsers() {
-  const data = localStorage.getItem("mockUsers");
-  if (data) return JSON.parse(data);
-  return [
-    { username: "abc", password: "1" },
-    { username: "teacher", password: "teachpass" },
-  ];
-}
-
-function saveMockUsers(users: any[]) {
-  localStorage.setItem("mockUsers", JSON.stringify(users));
-}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -26,8 +12,11 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+const EXPIRATION_TIME_MS = 4 * 60 * 60 * 1000;
+
 export default function Register() {
   const navigate = useNavigate();
+  const [isChecking, setIsChecking] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -38,6 +27,43 @@ export default function Register() {
     password?: string;
     confirmPassword?: string;
   }>({});
+
+  useEffect(() => {
+    const checkAuthAndExpiry = async () => {
+        const userId = localStorage.getItem("user_id");
+        const loginTime = localStorage.getItem("loginTimestamp");
+
+        if (!userId || !loginTime) {
+            // 1. Nếu chưa từng login -> cho phép render form
+            setIsChecking(false);
+            return;
+        }
+
+        // 2. Đã login, kiểm tra thời gian
+        const now = new Date().getTime();
+        const sessionAge = now - parseInt(loginTime, 10);
+
+        if (sessionAge > EXPIRATION_TIME_MS) {
+            // 3. Đã hết hạn -> Xóa session cũ, gọi logout, và cho phép render form
+            try {
+                // Gọi API logout để xóa cookie (không cần đợi)
+                fetch("http://localhost:3000/api/logout", {
+                    method: "GET",
+                    credentials: "include",
+                });
+            } catch (err) {
+                console.warn("Cleanup logout call failed.");
+            }
+            localStorage.clear(); 
+            setIsChecking(false);  // Cho phép render form
+        } else {
+            // 4. Vẫn còn hạn -> Chuyển thẳng vào /home
+            alert("You've already logged in!");
+            navigate("/home", { replace: true });
+        }
+    };
+    checkAuthAndExpiry();
+  }, [navigate]);
 
   const validatePassword = (pwd: string) => {
     const pattern = /^[a-zA-Z0-9]{3,30}$/;
@@ -64,19 +90,6 @@ export default function Register() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // const users = getMockUsers();
-      // // Check trùng username
-      // if (users.find((u: any) => u.username === username)) {
-      //   alert("Username already exists!");
-      //   return;
-      // }
-
-      // const newUser = { username, password };
-      // const updatedUsers = [...users, newUser];
-      // saveMockUsers(updatedUsers);
-
-      // alert("Register successful!");
-      // navigate("/login");
 
       try {
         const res = await fetch("http://localhost:3000/api/register", {

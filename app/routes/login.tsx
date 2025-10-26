@@ -11,13 +11,58 @@ export function meta({}: Route.MetaArgs) {
     { name: "description", content: "Login to SmartClassroom" },
   ];
 }
-
+const EXPIRATION_TIME_MS = 4 * 60 * 60 * 1000;
 export default function Login() {
+  
   const navigate = useNavigate();
+  const [isChecking, setIsChecking] = useState(true); 
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+
+  useEffect(() => {
+    // Đổi thành hàm async để có thể gọi API
+    const checkAuthAndExpiry = async () => {
+        const userId = localStorage.getItem("user_id");
+        const loginTime = localStorage.getItem("loginTimestamp");
+
+        if (!userId || !loginTime) {
+            // 1. Nếu chưa từng login -> cho phép render form
+            setIsChecking(false);
+            return;
+        }
+
+        // 2. Đã login, kiểm tra thời gian
+        const now = new Date().getTime();
+        const sessionAge = now - parseInt(loginTime, 10);
+
+        if (sessionAge > EXPIRATION_TIME_MS) {
+            // 3. Đã hết hạn -> Xóa session cũ và cho phép render form
+            
+            // --- GỌI LOGOUT ĐỂ XÓA COOKIE ---
+            try {
+                // Gọi API logout để dọn dẹp cookie (fire and forget)
+                fetch("http://localhost:3000/api/logout", {
+                    method: "GET",
+                    credentials: "include",
+                });
+            } catch (err) {
+                console.warn("Cleanup logout call failed.");
+            }
+            // -----------------------------
+
+            localStorage.clear(); // Xóa localStorage
+            setIsChecking(false);  // Cho phép render form
+        } else {
+            // 4. Vẫn còn hạn -> Chuyển thẳng vào /home
+            alert("You've already logged in!")
+            navigate("/home", { replace: true });
+        }
+    };
+
+    checkAuthAndExpiry(); // Gọi hàm async
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +104,11 @@ export default function Login() {
           }
           return;
         }
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
         // ✅ Successful login
         alert("Login successful!");
+        localStorage.clear();
         localStorage.setItem("user_id", data._id);
+        localStorage.setItem("loginTimestamp", new Date().getTime().toString());
         navigate("/home", { replace: true });
 
       } catch (err) {
