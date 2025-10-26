@@ -281,6 +281,7 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
                             try {
                               const data = await fetch(`http://localhost:3000/api/device/autoToggle/${name}`, {
                                 method: 'POST',
+                                credentials: "include"
                               });
                               console.log(data);
                             } catch (error) {
