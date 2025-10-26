@@ -1,17 +1,10 @@
-import type { Route } from "./+types/home";
+import HistoryContent from "~/components/history_components/history_content";
+import Menu from "~/components/home_components/Menu";
+import Navbar from "~/components/Navbar";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import HomeComponent from "~/components/home_components/HomeComponent";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
-const EXPIRATION_TIME_MS = 4 * 6 * 60 * 1000; 
-
-export default function Home() {
+const EXPIRATION_TIME_MS = 4 * 60 * 60 * 1000; 
+export default function History() {
     const navigate = useNavigate();
     const [isChecking, setIsChecking] = useState(true);
 
@@ -33,7 +26,9 @@ export default function Home() {
             const now = new Date().getTime();
             const sessionAge = now - parseInt(loginTime, 10);
 
-            if (sessionAge > EXPIRATION_TIME_MS) {       
+            if (sessionAge > EXPIRATION_TIME_MS) {
+                // --- ĐÃ HẾT HẠN (quá 10 giây) ---
+                
                 // 1. Thông báo cho user
                 alert("Phiên của bạn đã hết hạn (Test 10s). Vui lòng đăng nhập lại.");
 
@@ -65,9 +60,18 @@ export default function Home() {
         checkAuthAndExpiry();
 
   }, [navigate]);
-  if (isChecking) {
-    return null;
-  }
 
-  return <HomeComponent />;
+    if (isChecking) {
+        return null;
+    }
+return (
+        <div className="flex flex-col h-screen overflow-hidden">
+            <Navbar />
+
+            <div className="flex flex-row flex-1 min-h-0">
+                <Menu className="w-64 flex-shrink-0 bg-white" />
+                <HistoryContent className="flex-1 bg-gray-200 px-20 py-10 overflow-y-auto"/>
+            </div>
+        </div>
+    );
 }
