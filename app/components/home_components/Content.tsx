@@ -111,13 +111,14 @@ function IndicatorSection() {
     </div>)
 }
 
-type selectorProp = {level: number, setLevel: any, deviceType: string};
+type selectorProp = {level: number, setLevel: any, deviceType: string, deviceStatus: string};
 
-function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
-    const options = [" Level 1", "Level 2", "Level 3"];
+function FanModeSelector({level, setLevel, deviceType, deviceStatus}: selectorProp) {
+    const options = [" Breeze", "Normal", "Turbo"];
     // const [selected, setSelected] = useState(options[level]);
-    let selected = options[level];
+    let selected = options[level - 1];
     console.log("Level " + level);
+    console.log(selected);
   
 
   return (
@@ -128,7 +129,11 @@ function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
             key={option}
             className="flex flex-col items-center cursor-pointer"
             onClick={async () => {
-                setLevel(index);
+                if (deviceStatus === "Off") {
+                    alert(`The ${deviceType} is not on`);
+                    return;
+                }
+                setLevel(index + 1);
 
                 try {
                     const res = await fetch(`http://localhost:3000/api/device/setLevel/${deviceType}`, {
@@ -138,7 +143,7 @@ function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
                         'Content-Type': 'application/json',
                         },
                             body: JSON.stringify({
-                            level: index, // no need for extra quotes
+                            level: index + 1, // no need for extra quotes
                         }),
                     });
 
@@ -169,7 +174,7 @@ function FanModeSelector({level, setLevel, deviceType}: selectorProp) {
             {/* Label */}
             <span className="mt-2 text-black">{option}</span>
             </div>
-            {index < 3 && <div className="h-[2px] w-10 bg-blue-300 mb-7"></div>}
+            {index < 2 && <div className="h-[2px] w-10 bg-blue-300 mb-7"></div>}
         </div>
       ))}
       
@@ -295,7 +300,7 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
             </div>
             <div className="flex items-center justify-evenly h-fit w-full">
                     {/* Selector */}
-                <FanModeSelector level={level} setLevel={setLevel} deviceType={name}/>
+                <FanModeSelector level={level} setLevel={setLevel} deviceType={name} deviceStatus={powerMode}/>
             </div>
         </div>
     )
