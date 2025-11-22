@@ -95,9 +95,9 @@ function IndicatorSection() {
             }
           });
 
-        // return () => {
-        //     source.close(); // cleanup on unmount
-        // };
+        return () => {
+            source.close(); // cleanup on unmount
+        };
     }, [])
 
     return (<div>
@@ -195,7 +195,7 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
     const [powerMode, setPowerMode] = useState("Off");
     const [auto, setAuto] = useState("Manual");
     const [level, setLevel] = useState(0);
-
+    const [isTogglingAuto, setIsTogglingAuto] = useState(false);
     const [isPowerOn, setIsPowerOn] = useState(powerMode === "On");
     const [isAuto, setIsAuto] = useState(false);
     const [tempThreshold, setTempThreshold] = useState("35");
@@ -321,9 +321,11 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
                     console.log(`[${name}] Status EventSource connection closed due to error.`);
                     statusEventSourceRef.current = null;
                     // Cân nhắc set isAuto về false hoặc hiển thị lỗi cho người dùng
-                    // setIsAuto(false);
-                    // setAuto("Manual");
+                    setIsAuto(false);
+                    setAuto("Manual");
                     // console.error(`[${name}] Lost connection to status updates. Auto mode might be disabled.`);
+                 } else {
+                    console.log(`[${name}] Status EventSource encountered a temporary error. Will attempt to reconnect.`);
                  }
             };
 
@@ -409,6 +411,7 @@ const handleStatusUpdate = (eventData: string) => {
                 try {
                     const errorData = await res.json();
                     errorMsg = errorData.message || errorData.error || errorMsg;
+                                        // alert(`Reset failed: ${errorMsg}`);
                 } catch (parseError) {
                     // Không parse được lỗi, dùng message mặc định
                 }
@@ -425,8 +428,9 @@ const handleStatusUpdate = (eventData: string) => {
             }
             console.log('Thresholds saved!');
             alert('Thresholds saved successfully!')
-        } catch (error) {
+        } catch (error: any) {
             console.error('Save error:', error);
+            alert(`Reset failed: ${error.message}`);
         }
     };
 
@@ -468,7 +472,7 @@ const handleStatusUpdate = (eventData: string) => {
         } catch (error: any) { // Thêm kiểu 'any'
             // --- Xử lý lỗi ---
             console.error('Reset error:', error);
-            console.error(`Reset failed: ${error.message}`);
+            alert(`Reset failed: ${error.message}`);
         }
     };
 
@@ -510,6 +514,7 @@ const handleStatusUpdate = (eventData: string) => {
                         <p className="font-semibold text-xl">{toggleName2}</p>
                         <button onClick={async () => {
                             // auto === "Auto" ? setAuto("Manual") : setAuto("Auto");
+                            setIsTogglingAuto(true);
                             const nextIsAuto = !isAuto;
                             // if (auto === "Auto") {
                             //     setAuto("Manual");
