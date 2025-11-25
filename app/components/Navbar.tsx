@@ -16,7 +16,7 @@ export default function Navbar() {
                      onError={(e) => (e.currentTarget.src = 'https://placehold.co/40x40/E0E0E0/333?text=User')}
                      alt="User Avatar"
                      width={40} height={40} className="rounded-full w-10 h-10 object-cover"></img>
-            <p>Username123</p>
+            <p>{localStorage.getItem("username")}</p>
              </div>
         </div>
     )
