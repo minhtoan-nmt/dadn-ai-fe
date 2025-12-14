@@ -1,54 +1,13 @@
-// import { useEffect, useState } from "react";
-// import { GrMicrophone } from "react-icons/gr";
-
-// export default function MicrophoneInfo() {
-//     const [powerMode, setPowerMode] = useState(false);
-//     useEffect(() => {
-//         const getMicInfo = async () => {
-//             try {
-//                 const res = await fetch(`http://localhost:3000/api/device/getInfoDevice/microphone`, {
-//                     method: 'GET',
-//                     credentials: "include"
-//                 });
-//                 if (!res.ok)
-//                     throw new Error(`${res.status}`);
-//                 const data = await res.json();
-//                 setPowerMode(data.isActive);
-//             } catch (error) {
-//                 console.error(error);
-//             }    
-//         }
-//         getMicInfo();
-//     }, [])
-//     return (<div className="w-xs h-fit bg-white rounded-xl p-3 ">
-//         <h1 className="text-center font-semibold text-2xl">Microphone</h1>
-//         <div className="flex justify-center">
-//             <GrMicrophone size={175} className={"p-5 cursor-pointer hover:bg-gray-200 rounded-full m-5 " + (powerMode && "text-blue-400")}
-//                 onClick={async () => {
-//                     setPowerMode(!powerMode);
-//                     try {
-//                         const data = await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
-//                             method: 'POST',
-//                             credentials: "include"
-//                         });
-//                     } catch (error) {
-//                         console.error('Error: ', error);
-//                     }
-//                 }}
-//             />
-//         </div>
-//     </div>)
-// }
-
 import { useEffect, useState, useRef } from "react";
 import { GrMicrophone } from "react-icons/gr";
 
 export default function MicrophoneInfo() {
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState("");
+    
+    // 1. Thêm state để lưu kết quả trả về từ API AI
+    const [apiResult, setApiResult] = useState<any>(null); 
 
-    // Dùng ref để lưu giá trị transcript mới nhất phục vụ cho việc log khi tắt
-    // (Vì state trong hàm đóng event listener đôi khi không cập nhật kịp để log)
     const transcriptRef = useRef(""); 
     const recognitionRef = useRef<any>(null);
 
@@ -63,8 +22,8 @@ export default function MicrophoneInfo() {
 
         const recognition = new SpeechRecognition();
         recognition.lang = "vi-VN";            
-        recognition.continuous = true;         
-        recognition.interimResults = false;    
+        recognition.continuous = true;          
+        recognition.interimResults = false;     
 
         recognition.onresult = (event: any) => {
             let chunk = "";
@@ -75,12 +34,10 @@ export default function MicrophoneInfo() {
             }
 
             if (chunk.trim() !== "") {
-                // LOG 1: Log ngay đoạn vừa nói xong
                 console.log("🦻 Vừa nghe được:", chunk);
-                
                 setTranscript((prev) => {
                     const newText = prev + chunk;
-                    transcriptRef.current = newText; // Cập nhật ref để log sau
+                    transcriptRef.current = newText;
                     return newText;
                 });
             }
@@ -95,55 +52,92 @@ export default function MicrophoneInfo() {
             if (!isRecording) {
                 // --- BẮT ĐẦU ---
                 setTranscript(""); 
+                setApiResult(null); // Reset kết quả cũ khi bắt đầu nói mới
                 transcriptRef.current = "";
                 recognitionRef.current.start();
                 console.log("🔴 BẮT ĐẦU thu âm...");
             } else {
                 // --- KẾT THÚC ---
                 recognitionRef.current.stop();
+                console.log("🛑 ĐÃ TẮT MIC.");
                 
-                // LOG 2: Log tổng kết toàn bộ nội dung
-                console.log("🛑 ĐÃ TẮT MIC. Tổng nội dung thu được:");
-                console.log("👉 " + (transcriptRef.current || "Chưa nói gì hoặc chưa nhận diện được"));
+                const finalContent = transcriptRef.current;
+                console.log("Final content ", finalContent);
+
+                // === GỌI API AI COMMAND ===
+                if (finalContent && finalContent.trim()) {
+                    console.log("Đã thu được và vào if")
+                    try {
+                        console.log("🚀 Đang gửi text tới AI API:", finalContent);
+                        
+                        const aiRes = await fetch("http://localhost:3000/api/ai/command", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ text: finalContent }),
+                        });
+
+                        // 2. Xử lý dữ liệu trả về
+                        if (aiRes.ok) {
+                            const data = await aiRes.json();
+                            console.log("✅ API AI trả về:", data); // Log ra console (F12)
+                            setApiResult(data); // Lưu vào state để hiện lên màn hình
+                        } else {
+                            console.error("❌ API lỗi:", aiRes.status);
+                            setApiResult({ error: `Lỗi API: ${aiRes.status}` });
+                        }
+                    } catch (error) {
+                        console.error("❌ Lỗi kết nối:", error);
+                        setApiResult({ error: "Không thể kết nối đến server" });
+                    }
+                }
             }
         }
         
-        const nextState = !isRecording;
-        setIsRecording(nextState);
+        setIsRecording(!isRecording);
 
-        // Gọi API Toggle
+        // Gọi API Toggle microphone (giữ nguyên)
         try {
-            // console.log("Gọi API toggle microphone...");
-            const res = await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
+            await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
                 method: 'POST',
                 credentials: "include"
             });
-            // if (res.ok) console.log("API Toggle OK");
         } catch (error) {
-            console.error('API Error:', error);
+            console.error('API Device Toggle Error:', error);
         }
     };
 
     return (
-        <div className="w-xs h-fit bg-white rounded-xl p-3">
+        <div className="w-xs h-fit bg-white rounded-xl p-3 flex flex-col gap-3">
             <h1 className="text-center font-semibold text-2xl">Microphone</h1>
 
             <div className="flex justify-center">
                 <GrMicrophone
                     size={175}
                     className={
-                        "p-5 cursor-pointer rounded-full m-5 transition " +
+                        "p-5 cursor-pointer rounded-full transition " +
                         (isRecording ? "text-red-500 bg-red-100" : "hover:bg-gray-200")
                     }
                     onClick={handleToggleRecord}
                 />
             </div>
 
-            {/* Hiển thị text trên giao diện */}
+            {/* Hiển thị Text người dùng nói */}
             {transcript && (
-                <div className="p-3 bg-gray-100 rounded-lg text-sm max-h-40 overflow-y-auto border border-gray-300">
-                    <b className="text-gray-600">Kết quả (Real-time):</b>
-                    <p className="mt-1 text-gray-800 font-medium">{transcript}</p>
+                <div className="p-3 bg-gray-100 rounded-lg text-sm border border-gray-300">
+                    <b className="text-gray-600">Bạn đã nói:</b>
+                    <p className="mt-1 text-gray-800">{transcript}</p>
+                </div>
+            )}
+
+            {/* 3. Hiển thị Kết quả từ API AI (JSON) */}
+            {apiResult && (
+                <div className="p-3 bg-blue-50 rounded-lg text-sm border border-blue-200 overflow-x-auto">
+                    <b className="text-blue-700">Phản hồi từ AI:</b>
+                    <pre className="mt-2 text-xs text-blue-900 font-mono whitespace-pre-wrap">
+                        {JSON.stringify(apiResult, null, 2)}
+                    </pre>
                 </div>
             )}
         </div>
