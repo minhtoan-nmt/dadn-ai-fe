@@ -1,45 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { GrMicrophone } from "react-icons/gr";
-
-// export default function MicrophoneInfo() {
-//     const [powerMode, setPowerMode] = useState(false);
-//     useEffect(() => {
-//         const getMicInfo = async () => {
-//             try {
-//                 const res = await fetch(`http://localhost:3000/api/device/getInfoDevice/microphone`, {
-//                     method: 'GET',
-//                     credentials: "include"
-//                 });
-//                 if (!res.ok)
-//                     throw new Error(`${res.status}`);
-//                 const data = await res.json();
-//                 setPowerMode(data.isActive);
-//             } catch (error) {
-//                 console.error(error);
-//             }    
-//         }
-//         getMicInfo();
-//     }, [])
-//     return (<div className="w-xs h-fit bg-white rounded-xl p-3 ">
-//         <h1 className="text-center font-semibold text-2xl">Microphone</h1>
-//         <div className="flex justify-center">
-//             <GrMicrophone size={175} className={"p-5 cursor-pointer hover:bg-gray-200 rounded-full m-5 " + (powerMode && "text-blue-400")}
-//                 onClick={async () => {
-//                     setPowerMode(!powerMode);
-//                     try {
-//                         const data = await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
-//                             method: 'POST',
-//                             credentials: "include"
-//                         });
-//                     } catch (error) {
-//                         console.error('Error: ', error);
-//                     }
-//                 }}
-//             />
-//         </div>
-//     </div>)
-// }
-
 import { useEffect, useState, useRef } from "react";
 import { GrMicrophone } from "react-icons/gr";
 
@@ -47,10 +5,12 @@ export default function MicrophoneInfo() {
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState("");
 
-    // Dùng ref để lưu giá trị transcript mới nhất phục vụ cho việc log khi tắt
-    // (Vì state trong hàm đóng event listener đôi khi không cập nhật kịp để log)
-    const transcriptRef = useRef(""); 
+    const transcriptRef = useRef("");
     const recognitionRef = useRef<any>(null);
+
+    // Ref này dùng để chặn việc gửi API khi không phải do người dùng chủ động tắt
+    // (Tuỳ chọn, nhưng tốt cho UX)
+    const isManualStopRef = useRef(false);
 
     useEffect(() => {
         const SpeechRecognition =
@@ -62,9 +22,9 @@ export default function MicrophoneInfo() {
         }
 
         const recognition = new SpeechRecognition();
-        recognition.lang = "vi-VN";            
-        recognition.continuous = true;         
-        recognition.interimResults = false;    
+        recognition.lang = "vi-VN";
+        recognition.continuous = true;
+        recognition.interimResults = false;
 
         recognition.onresult = (event: any) => {
             let chunk = "";
@@ -75,52 +35,75 @@ export default function MicrophoneInfo() {
             }
 
             if (chunk.trim() !== "") {
-                // LOG 1: Log ngay đoạn vừa nói xong
                 console.log("🦻 Vừa nghe được:", chunk);
-                
                 setTranscript((prev) => {
                     const newText = prev + chunk;
-                    transcriptRef.current = newText; // Cập nhật ref để log sau
+                    transcriptRef.current = newText; 
                     return newText;
                 });
             }
         };
 
-        recognition.onerror = (e: any) => console.error("Speech error:", e);
+        // --- QUAN TRỌNG: Xử lý gửi API tại đây ---
+        // Sự kiện onend chạy khi mic đã tắt hẳn và dữ liệu đã chốt xong
+        recognition.onend = async () => {
+            setIsRecording(false); // Đảm bảo icon tắt
+            console.log("🛑 Microphone đã tắt hoàn toàn (onend triggered).");
+
+            const finalContent = transcriptRef.current.trim();
+            
+            // Chỉ gửi nếu có nội dung và (tuỳ chọn) do người dùng bấm tắt
+            if (finalContent && isManualStopRef.current) {
+                console.log("🚀 Đang gửi nội dung:", finalContent);
+                try {
+                    const res = await fetch(`http://localhost:3000/api/voicecontrol`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: "include",
+                        body: JSON.stringify({ 
+                            text: finalContent 
+                        })
+                    });
+                    
+                    if (res.ok) console.log("✅ Gửi API thành công!");
+                } catch (error) {
+                    console.error('API Error:', error);
+                }
+            } else {
+                console.log("⚠️ Không gửi API (Do không có nội dung hoặc mic tự tắt)");
+            }
+            
+            // Reset cờ manual stop
+            isManualStopRef.current = false;
+        };
+
+        recognition.onerror = (e: any) => {
+            console.error("Speech error:", e);
+            setIsRecording(false);
+        };
+        
         recognitionRef.current = recognition;
     }, []);
 
-    const handleToggleRecord = async () => {
-        if (recognitionRef.current) {
-            if (!isRecording) {
-                // --- BẮT ĐẦU ---
-                setTranscript(""); 
-                transcriptRef.current = "";
-                recognitionRef.current.start();
-                console.log("🔴 BẮT ĐẦU thu âm...");
-            } else {
-                // --- KẾT THÚC ---
-                recognitionRef.current.stop();
-                
-                // LOG 2: Log tổng kết toàn bộ nội dung
-                console.log("🛑 ĐÃ TẮT MIC. Tổng nội dung thu được:");
-                console.log("👉 " + (transcriptRef.current || "Chưa nói gì hoặc chưa nhận diện được"));
-            }
-        }
-        
-        const nextState = !isRecording;
-        setIsRecording(nextState);
+    const handleToggleRecord = () => {
+        if (!recognitionRef.current) return;
 
-        // Gọi API Toggle
-        try {
-            // console.log("Gọi API toggle microphone...");
-            const res = await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
-                method: 'POST',
-                credentials: "include"
-            });
-            // if (res.ok) console.log("API Toggle OK");
-        } catch (error) {
-            console.error('API Error:', error);
+        if (!isRecording) {
+            // --- BẮT ĐẦU ---
+            setTranscript("");
+            transcriptRef.current = "";
+            recognitionRef.current.start();
+            setIsRecording(true);
+            console.log("🔴 BẮT ĐẦU thu âm...");
+        } else {
+            // --- KẾT THÚC ---
+            // Đánh dấu là người dùng chủ động tắt
+            isManualStopRef.current = true;
+            recognitionRef.current.stop();
+            // KHÔNG gửi API ở đây nữa. Để onend lo.
+            console.log("⏳ Đã bấm tắt, đợi xử lý...");
         }
     };
 
@@ -139,10 +122,9 @@ export default function MicrophoneInfo() {
                 />
             </div>
 
-            {/* Hiển thị text trên giao diện */}
             {transcript && (
                 <div className="p-3 bg-gray-100 rounded-lg text-sm max-h-40 overflow-y-auto border border-gray-300">
-                    <b className="text-gray-600">Kết quả (Real-time):</b>
+                    <b className="text-gray-600">Kết quả:</b>
                     <p className="mt-1 text-gray-800 font-medium">{transcript}</p>
                 </div>
             )}
