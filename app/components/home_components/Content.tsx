@@ -293,105 +293,178 @@ function DeviceInfo({deviceName, deviceStatus, toggleName1, toggleName2, deviceI
     }, [name])
 
 // --- useEffect MỚI ĐỂ LẮNG NGHE STATUS KHI isAuto = true ---
+//     useEffect(() => {
+//         // Chỉ chạy khi isAuto là true và device là fan hoặc light
+//         if (isAuto && (name === 'fan' || name === 'light')) {
+//             console.log(`[${name}] Auto mode ON. Starting status stream listener...`);
+
+//             // Đóng kết nối cũ nếu có (phòng trường hợp hi hữu)
+//             if (statusEventSourceRef.current) {
+//                  console.log(`[${name}] Closing previous status stream connection before opening a new one.`);
+//                  statusEventSourceRef.current.close();
+//             }
+
+//             // Tạo kết nối mới
+//             const source = new EventSource("http://localhost:3000/api/stream/status", {
+//                  withCredentials: true,
+//             });
+//             statusEventSourceRef.current = source; // Lưu lại để có thể đóng sau
+
+//             source.onopen = () => {
+//                  console.log(`[${name}] ✅ Status EventSource Connected!`);
+//             };
+
+//             source.onerror = (err) => {
+//                  console.error(`[${name}] ❌ Status EventSource Error:`, err);
+//                  // Tự động đóng khi có lỗi nghiêm trọng
+//                  if (source.readyState === EventSource.CLOSED) {
+//                     console.log(`[${name}] Status EventSource connection closed due to error.`);
+//                     statusEventSourceRef.current = null;
+//                     // Cân nhắc set isAuto về false hoặc hiển thị lỗi cho người dùng
+//                     setIsAuto(false);
+//                     setAuto("Manual");
+//                     // console.error(`[${name}] Lost connection to status updates. Auto mode might be disabled.`);
+//                  } else {
+//                     console.log(`[${name}] Status EventSource encountered a temporary error. Will attempt to reconnect.`);
+//                  }
+//             };
+
+//             // Hàm xử lý data nhận được
+// const handleStatusUpdate = (eventData: string) => {
+//                  try {
+//                      const data = JSON.parse(eventData);
+//                      console.log(`[${name}] Received status update object:`, data);
+
+//                      let newIsActive: boolean | undefined = undefined;
+
+//                      if (name === 'fan' && typeof data.fan === 'boolean') {
+//                          newIsActive = data.fan;
+//                          console.log(`[${name}] Extracted fan status: ${newIsActive}`);
+//                      } else if (name === 'light' && typeof data.light === 'boolean') {
+//                          newIsActive = data.light;
+//                          console.log(`[${name}] Extracted light status: ${newIsActive}`);
+//                      } else {
+//                          console.log(`[${name}] Ignoring update: Data object does not contain key '${name}' or value is not boolean.`);
+//                          // Không cần return ở đây nữa, newIsActive sẽ là undefined
+//                      }
+
+//                      // Chỉ gọi cập nhật state nếu newIsActive có giá trị boolean
+//                      if (typeof newIsActive === 'boolean') {
+//                          setIsPowerOn(currentIsPowerOn => {
+//                              if (currentIsPowerOn !== newIsActive) {
+//                                  console.log(`[${name}] ---> UPDATING UI STATE <--- from ${currentIsPowerOn} to ${newIsActive}`);
+//                                  setPowerMode(newIsActive ? "On" : "Off");
+//                                  return newIsActive; // ✅ Trả về boolean
+//                              } else {
+//                                  console.log(`[${name}] No UI update needed (received state matches current state).`);
+//                                  return currentIsPowerOn; // ✅ Trả về boolean (giá trị cũ)
+//                              }
+//                          });
+//                      }
+//                      // Nếu newIsActive là undefined, không làm gì cả
+
+//                  } catch (err) {
+//                      console.warn(`[${name}] Failed to parse status JSON:`, eventData, err);
+//                  }
+//             };
+
+//             // Lắng nghe cả event "status" và "message"
+//             source.addEventListener("status", (e) => {
+//                 console.log(`[${name}] Event 'status' received.`);
+//                 handleStatusUpdate(e.data)
+//             });
+//             source.addEventListener("message", (e) => {
+//                 console.log(`[${name}] Event 'message' received.`);
+//                 handleStatusUpdate(e.data)
+//             }); // Dự phòng nếu BE gửi event mặc định
+
+//         }
+//         // --- Kết thúc khối if (isAuto) ---
+
+//         // --- Hàm Cleanup ---
+//         // Sẽ chạy khi isAuto chuyển thành false HOẶC khi component unmount
+//         return () => {
+//             if (statusEventSourceRef.current) {
+//                 console.log(`[${name}] Cleaning up: Closing status stream listener.`);
+//                 statusEventSourceRef.current.close();
+//                 statusEventSourceRef.current = null; // Quan trọng: Đặt lại ref thành null
+//             }
+//         };
+//     }, [isAuto, name]); // Dependency array: chạy lại khi isAuto hoặc name thay đổi
+    // --- KẾT THÚC useEffect MỚI ---
+
     useEffect(() => {
-        // Chỉ chạy khi isAuto là true và device là fan hoặc light
-        if (isAuto && (name === 'fan' || name === 'light')) {
-            console.log(`[${name}] Auto mode ON. Starting status stream listener...`);
+        // Chỉ tạo kết nối cho Fan và Light
+        if (name === 'fan' || name === 'light') {
+        console.log(`[${name}] 📡 Initializing PERMANENT status stream listener...`);
 
-            // Đóng kết nối cũ nếu có (phòng trường hợp hi hữu)
-            if (statusEventSourceRef.current) {
-                 console.log(`[${name}] Closing previous status stream connection before opening a new one.`);
-                 statusEventSourceRef.current.close();
-            }
-
-            // Tạo kết nối mới
-            const source = new EventSource("http://localhost:3000/api/stream/status", {
-                 withCredentials: true,
-            });
-            statusEventSourceRef.current = source; // Lưu lại để có thể đóng sau
-
-            source.onopen = () => {
-                 console.log(`[${name}] ✅ Status EventSource Connected!`);
-            };
-
-            source.onerror = (err) => {
-                 console.error(`[${name}] ❌ Status EventSource Error:`, err);
-                 // Tự động đóng khi có lỗi nghiêm trọng
-                 if (source.readyState === EventSource.CLOSED) {
-                    console.log(`[${name}] Status EventSource connection closed due to error.`);
-                    statusEventSourceRef.current = null;
-                    // Cân nhắc set isAuto về false hoặc hiển thị lỗi cho người dùng
-                    setIsAuto(false);
-                    setAuto("Manual");
-                    // console.error(`[${name}] Lost connection to status updates. Auto mode might be disabled.`);
-                 } else {
-                    console.log(`[${name}] Status EventSource encountered a temporary error. Will attempt to reconnect.`);
-                 }
-            };
-
-            // Hàm xử lý data nhận được
-const handleStatusUpdate = (eventData: string) => {
-                 try {
-                     const data = JSON.parse(eventData);
-                     console.log(`[${name}] Received status update object:`, data);
-
-                     let newIsActive: boolean | undefined = undefined;
-
-                     if (name === 'fan' && typeof data.fan === 'boolean') {
-                         newIsActive = data.fan;
-                         console.log(`[${name}] Extracted fan status: ${newIsActive}`);
-                     } else if (name === 'light' && typeof data.light === 'boolean') {
-                         newIsActive = data.light;
-                         console.log(`[${name}] Extracted light status: ${newIsActive}`);
-                     } else {
-                         console.log(`[${name}] Ignoring update: Data object does not contain key '${name}' or value is not boolean.`);
-                         // Không cần return ở đây nữa, newIsActive sẽ là undefined
-                     }
-
-                     // Chỉ gọi cập nhật state nếu newIsActive có giá trị boolean
-                     if (typeof newIsActive === 'boolean') {
-                         setIsPowerOn(currentIsPowerOn => {
-                             if (currentIsPowerOn !== newIsActive) {
-                                 console.log(`[${name}] ---> UPDATING UI STATE <--- from ${currentIsPowerOn} to ${newIsActive}`);
-                                 setPowerMode(newIsActive ? "On" : "Off");
-                                 return newIsActive; // ✅ Trả về boolean
-                             } else {
-                                 console.log(`[${name}] No UI update needed (received state matches current state).`);
-                                 return currentIsPowerOn; // ✅ Trả về boolean (giá trị cũ)
-                             }
-                         });
-                     }
-                     // Nếu newIsActive là undefined, không làm gì cả
-
-                 } catch (err) {
-                     console.warn(`[${name}] Failed to parse status JSON:`, eventData, err);
-                 }
-            };
-
-            // Lắng nghe cả event "status" và "message"
-            source.addEventListener("status", (e) => {
-                console.log(`[${name}] Event 'status' received.`);
-                handleStatusUpdate(e.data)
-            });
-            source.addEventListener("message", (e) => {
-                console.log(`[${name}] Event 'message' received.`);
-                handleStatusUpdate(e.data)
-            }); // Dự phòng nếu BE gửi event mặc định
-
+        // Đóng kết nối cũ nếu tồn tại (để tránh duplicate)
+        if (statusEventSourceRef.current) {
+            statusEventSourceRef.current.close();
         }
-        // --- Kết thúc khối if (isAuto) ---
 
-        // --- Hàm Cleanup ---
-        // Sẽ chạy khi isAuto chuyển thành false HOẶC khi component unmount
-        return () => {
-            if (statusEventSourceRef.current) {
-                console.log(`[${name}] Cleaning up: Closing status stream listener.`);
-                statusEventSourceRef.current.close();
-                statusEventSourceRef.current = null; // Quan trọng: Đặt lại ref thành null
+        const source = new EventSource("http://localhost:3000/api/stream/status", {
+            withCredentials: true,
+        });
+        statusEventSourceRef.current = source;
+
+        source.onopen = () => {
+            console.log(`[${name}] ✅ Status Stream Connected! Ready for AI/Auto updates.`);
+        };
+
+        source.onerror = (err) => {
+            console.log(`[${name}] ⚠️ Status Stream Error/Reconnecting...`);
+            if (source.readyState === EventSource.CLOSED) {
+                statusEventSourceRef.current = null;
             }
         };
-    }, [isAuto, name]); // Dependency array: chạy lại khi isAuto hoặc name thay đổi
-    // --- KẾT THÚC useEffect MỚI ---
+
+        const handleStatusUpdate = (eventData: string) => {
+            try {
+                const data = JSON.parse(eventData);
+                
+                let newIsActive: boolean | undefined = undefined;
+
+                // Lọc dữ liệu đúng với thiết bị hiện tại
+                if (name === 'fan' && typeof data.fan === 'boolean') {
+                    newIsActive = data.fan;
+                } else if (name === 'light' && typeof data.light === 'boolean') {
+                    newIsActive = data.light;
+                }
+
+                // Cập nhật State
+                if (typeof newIsActive === 'boolean') {
+                    setIsPowerOn(currentIsPowerOn => {
+                        // Chỉ render lại nếu trạng thái thực sự thay đổi
+                        if (currentIsPowerOn !== newIsActive) {
+                            console.log(`[${name}] 🔄 Syncing UI from Stream: ${currentIsPowerOn ? 'ON' : 'OFF'} -> ${newIsActive ? 'ON' : 'OFF'}`);
+                            setPowerMode(newIsActive ? "On" : "Off");
+                            return newIsActive;
+                        }
+                        return currentIsPowerOn;
+                    });
+                }
+            } catch (err) {
+                console.warn(`[${name}] Parse error:`, err);
+            }
+        };
+
+        // Lắng nghe sự kiện
+        source.addEventListener("status", (e) => handleStatusUpdate(e.data));
+        // Fallback cho message mặc định (nếu có)
+        source.addEventListener("message", (e) => handleStatusUpdate(e.data));
+        }
+
+        // Cleanup khi component bị hủy (rời khỏi trang)
+        return () => {
+        if (statusEventSourceRef.current) {
+            console.log(`[${name}] Component unmount: Closing status stream.`);
+            statusEventSourceRef.current.close();
+            statusEventSourceRef.current = null;
+        }
+        };
+    }, [name]);
+
 
     const handleSaveThresholds = async () => {
         const body = (name === 'fan')
