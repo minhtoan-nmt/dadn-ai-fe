@@ -89,7 +89,7 @@ const handleToggleRecord = async () => {
                 try {
                     console.log("🚀 Đang gửi text tới AI API:", finalContent);
                     
-                    const aiRes = await fetch("http://localhost:3000/api/ai/command", {
+                    const aiRes = await fetch("http://localhost:3000/api/voicecontrol", {
                         method: "POST",
                         credentials: "include",
                         headers: {
@@ -102,15 +102,6 @@ const handleToggleRecord = async () => {
                         const data = await aiRes.json();
                         console.log("✅ API AI trả về:", data);
                         setApiResult(data);
-
-                        // BẮN SỰ KIỆN ĐỂ CẬP NHẬT UI
-                        if (data.label) {
-                            console.log("📢 Dispatching event:", data.label);
-                            const event = new CustomEvent("ai-command-completed", { 
-                                detail: { label: data.label } 
-                            });
-                            window.dispatchEvent(event);
-                        }
                     } else {
                         console.error("❌ API lỗi:", aiRes.status);
                         setApiResult({ error: `Lỗi API: ${aiRes.status}` });
@@ -121,14 +112,6 @@ const handleToggleRecord = async () => {
                 }
             }, 1000); 
         }
-
-        // Gọi API Toggle microphone (giữ nguyên logic backend của bạn)
-        try {
-            await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
-                method: 'POST',
-                credentials: "include"
-            });
-        } catch (error) {}
     };
     
     return (
@@ -157,7 +140,7 @@ const handleToggleRecord = async () => {
                 <div className="p-3 bg-blue-50 rounded-lg text-sm border border-blue-200 overflow-x-auto">
                     <b className="text-blue-700">Phản hồi từ AI:</b>
                     <pre className="mt-2 text-xs text-blue-900 font-mono whitespace-pre-wrap">
-                        {apiResult.action}
+                        {apiResult}
                     </pre>
                 </div>
             )}
