@@ -157,7 +157,7 @@ const handleToggleRecord = async () => {
                 <div className="p-3 bg-blue-50 rounded-lg text-sm border border-blue-200 overflow-x-auto">
                     <b className="text-blue-700">Phản hồi từ AI:</b>
                     <pre className="mt-2 text-xs text-blue-900 font-mono whitespace-pre-wrap">
-                        {JSON.stringify(apiResult, null, 2)}
+                        {apiResult.action}
                     </pre>
                 </div>
             )}
