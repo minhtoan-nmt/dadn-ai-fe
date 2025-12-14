@@ -233,16 +233,16 @@ export default function Content({ className = "" }) {
 
 
   // Giữ nguyên Study Data (Hardcode)
-  const studyData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [{ label: "Study Duration (hours)", data: [2, 3, 1, 3, 3, 3, 4], backgroundColor: "#007bff", borderRadius: 5 }],
-  };
-  const commonBarOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: "top" as const } },
-    scales: { x: { grid: { display: false } }, y: { grid: { color: "#eee" } } },
-  };
+  // const studyData = {
+  //   labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  //   datasets: [{ label: "Study Duration (hours)", data: [2, 3, 1, 3, 3, 3, 4], backgroundColor: "#007bff", borderRadius: 5 }],
+  // };
+  // const commonBarOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   plugins: { legend: { position: "top" as const } },
+  //   scales: { x: { grid: { display: false } }, y: { grid: { color: "#eee" } } },
+  // };
 
   return (
     <div className={`flex flex-col flex-1 p-6 md:p-10 bg-gray-100 gap-8 ${className}`}>
@@ -250,7 +250,7 @@ export default function Content({ className = "" }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-6">
         
         {/* 1. Study Duration (Static) */}
-        <div className={chartContainerStyle}>
+        {/* <div className={chartContainerStyle}>
           <div className="flex justify-between items-center">
             <h2 className="font-bold text-lg text-blue-900">Study Duration</h2>
             <select className="text-sm text-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none cursor-pointer">
@@ -263,7 +263,7 @@ export default function Content({ className = "" }) {
             <span>Average Study Duration: <b>3h</b></span>
             <span>Shortest Study Duration: <b>Wednesday</b></span> 
           </div>
-        </div>
+        </div> */}
 
         {/* 2. Temperature (Dynamic) */}
         <div className={chartContainerStyle}>
@@ -331,3 +331,5 @@ export default function Content({ className = "" }) {
     </div>
   );
 }
+
+// COMMENT

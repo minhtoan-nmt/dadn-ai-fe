@@ -47,12 +47,14 @@ export default function MicrophoneInfo() {
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState("");
 
-    const recognitionRef = useRef(null);
+    // Dùng ref để lưu giá trị transcript mới nhất phục vụ cho việc log khi tắt
+    // (Vì state trong hàm đóng event listener đôi khi không cập nhật kịp để log)
+    const transcriptRef = useRef(""); 
+    const recognitionRef = useRef<any>(null);
 
     useEffect(() => {
-        // SpeechRecognition init
         const SpeechRecognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
+            (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
             alert("Trình duyệt không hỗ trợ SpeechRecognition API");
@@ -60,39 +62,66 @@ export default function MicrophoneInfo() {
         }
 
         const recognition = new SpeechRecognition();
-        recognition.lang = "vi-VN";            // tiếng Việt
-        recognition.continuous = true;         // thu liên tục
-        recognition.interimResults = false;    // chỉ lấy kết quả cuối
+        recognition.lang = "vi-VN";            
+        recognition.continuous = true;         
+        recognition.interimResults = false;    
 
-        recognition.onresult = (event) => {
-            let text = "";
+        recognition.onresult = (event: any) => {
+            let chunk = "";
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
-                    text += event.results[i][0].transcript + " ";
+                    chunk += event.results[i][0].transcript + " ";
                 }
             }
-            setTranscript((prev) => prev + text);
+
+            if (chunk.trim() !== "") {
+                // LOG 1: Log ngay đoạn vừa nói xong
+                console.log("🦻 Vừa nghe được:", chunk);
+                
+                setTranscript((prev) => {
+                    const newText = prev + chunk;
+                    transcriptRef.current = newText; // Cập nhật ref để log sau
+                    return newText;
+                });
+            }
         };
 
-        recognition.onerror = (e) => console.error("Speech error:", e);
-
+        recognition.onerror = (e: any) => console.error("Speech error:", e);
         recognitionRef.current = recognition;
     }, []);
 
-    const handleToggleRecord = () => {
-        if (!recognitionRef.current) return;
-
-        if (!isRecording) {
-            // Start record
-            setTranscript(""); // reset text
-            recognitionRef.current.start();
-            console.log("🔴 Bắt đầu thu âm...");
-        } else {
-            // Stop record
-            recognitionRef.current.stop();
-            console.log("🟢 Dừng thu âm. Kết quả:", transcript);
+    const handleToggleRecord = async () => {
+        if (recognitionRef.current) {
+            if (!isRecording) {
+                // --- BẮT ĐẦU ---
+                setTranscript(""); 
+                transcriptRef.current = "";
+                recognitionRef.current.start();
+                console.log("🔴 BẮT ĐẦU thu âm...");
+            } else {
+                // --- KẾT THÚC ---
+                recognitionRef.current.stop();
+                
+                // LOG 2: Log tổng kết toàn bộ nội dung
+                console.log("🛑 ĐÃ TẮT MIC. Tổng nội dung thu được:");
+                console.log("👉 " + (transcriptRef.current || "Chưa nói gì hoặc chưa nhận diện được"));
+            }
         }
-        setIsRecording(!isRecording);
+        
+        const nextState = !isRecording;
+        setIsRecording(nextState);
+
+        // Gọi API Toggle
+        try {
+            // console.log("Gọi API toggle microphone...");
+            const res = await fetch(`http://localhost:3000/api/device/statusToggle/microphone`, {
+                method: 'POST',
+                credentials: "include"
+            });
+            // if (res.ok) console.log("API Toggle OK");
+        } catch (error) {
+            console.error('API Error:', error);
+        }
     };
 
     return (
@@ -110,11 +139,11 @@ export default function MicrophoneInfo() {
                 />
             </div>
 
-            {/* Hiển thị text sau ghi âm */}
+            {/* Hiển thị text trên giao diện */}
             {transcript && (
-                <div className="p-3 bg-gray-100 rounded-lg text-sm">
-                    <b>Kết quả thu âm:</b>
-                    <p>{transcript}</p>
+                <div className="p-3 bg-gray-100 rounded-lg text-sm max-h-40 overflow-y-auto border border-gray-300">
+                    <b className="text-gray-600">Kết quả (Real-time):</b>
+                    <p className="mt-1 text-gray-800 font-medium">{transcript}</p>
                 </div>
             )}
         </div>

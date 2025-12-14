@@ -1,7 +1,7 @@
 import { FaCircle, FaTemperatureHalf } from "react-icons/fa6";
 import { IoWaterOutline } from "react-icons/io5";
 import { IoSunnyOutline } from "react-icons/io5";
-import { BsPeople } from "react-icons/bs";
+// import { BsPeople } from "react-icons/bs";
 import { PiFan } from "react-icons/pi";
 import { BiSolidToggleRight } from "react-icons/bi";
 import { useEffect, useState, useRef } from "react";
@@ -31,7 +31,7 @@ function IndicatorSection() {
     const [temperature, setTemperature] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [lightIntensity, setLightIntensity] = useState(0);
-    const [isPresent, setIsPresent] = useState(false);
+    // const [isPresent, setIsPresent] = useState(false);
 
 
 
@@ -39,7 +39,7 @@ function IndicatorSection() {
         {heading: "Temperature", icon: <FaTemperatureHalf className="size-16"/>, number: temperature, measurement: "°C", state: "Normal", stateColor: "bg-blue-400"},
         {heading: "Humidity", icon: <IoWaterOutline className="size-16"/>, number: humidity, measurement: "%", state: "Humid", stateColor: "bg-blue-200"},
         {heading: "Light Intensity", icon: <IoSunnyOutline className="size-16"/>, number: lightIntensity, measurement: "lux", state: "Heavy bright", stateColor: "bg-yellow-300"},
-        {heading: "Present", icon: <BsPeople className="size-16"/>, state: (isPresent ? "Present" : "Absent"), stateColor: "bg-green-400"},
+        // {heading: "Present", icon: <BsPeople className="size-16"/>, state: (isPresent ? "Present" : "Absent"), stateColor: "bg-green-400"},
     ];
 
     if (temperature < 20) { // Giả sử < 20 là Low
