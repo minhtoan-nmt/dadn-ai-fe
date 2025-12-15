@@ -4,6 +4,7 @@ import { GrMicrophone } from "react-icons/gr";
 export default function MicrophoneInfo() {
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState("");
+    const [actionScript, setActionScript] = useState("");
 
     const transcriptRef = useRef("");
     const recognitionRef = useRef<any>(null);
@@ -68,6 +69,9 @@ export default function MicrophoneInfo() {
                     });
                     
                     if (res.ok) console.log("✅ Gửi API thành công!");
+                    const data = await res.json();
+                    const message = data.message;
+                    setActionScript(message);
                 } catch (error) {
                     console.error('API Error:', error);
                 }
@@ -123,9 +127,15 @@ export default function MicrophoneInfo() {
             </div>
 
             {transcript && (
-                <div className="p-3 bg-gray-100 rounded-lg text-sm max-h-40 overflow-y-auto border border-gray-300">
-                    <b className="text-gray-600">Kết quả:</b>
-                    <p className="mt-1 text-gray-800 font-medium">{transcript}</p>
+                <div>
+                    <div className="p-3 bg-gray-100 rounded-lg text-sm max-h-40 overflow-y-auto border border-gray-300">
+                        <b className="text-gray-600">Kết quả:</b>
+                        <p className="mt-1 text-gray-800 font-medium">{transcript}</p>
+                    </div>
+                    <div className="p-3 bg-gray-100 rounded-lg text-sm max-h-40 overflow-y-auto border border-gray-300">
+                        <b className="text-gray-600">Message:</b>
+                        <p className="mt-1 text-gray-800 font-medium">{actionScript}</p>
+                    </div>
                 </div>
             )}
         </div>
