@@ -456,15 +456,15 @@ const handleStatusUpdate = (eventData: string) => {
             alert("Thresholds reset successfully!");
 
             if (name === 'fan') {
-                const defaultTemp = defaultThresholds.temp || "35"; // Giá trị dự phòng
-                const defaultHumidity = defaultThresholds.humidity || "60"; // Giá trị dự phòng
+                const defaultTemp = defaultThresholds.tempThreshold || "35"; // Giá trị dự phòng
+                const defaultHumidity = defaultThresholds.humidityThreshold || "60"; // Giá trị dự phòng
                 setTempThreshold(defaultTemp);
                 setHumidityThreshold(defaultHumidity);
                 setInputTemp(defaultTemp); // Cập nhật cả input
                 setInputHumidity(defaultHumidity); // Cập nhật cả input
             } else if (name === 'light') {
                  // Giả sử API trả về defaultThresholds.light
-                const defaultLight = defaultThresholds.light || "300"; // Giá trị dự phòng
+                const defaultLight = defaultThresholds.lightThreshold || "300"; // Giá trị dự phòng
                 setLightThreshold(defaultLight);
                 setInputLight(defaultLight); // Cập nhật cả input
             }
